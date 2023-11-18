@@ -1,0 +1,5 @@
+[build]
+target = "x86_64-unknown-none"
+rustflags = [
+    "-C", "target-feature=+aes,+avx,+bmi1,+f16c,+lzcnt,+mmx,+movbe,+pclmulqdq,+popcnt,-soft-float,+sse,+sse2,+sse3,+ssse3,+sse4a,+sse4.1,+sse4.2,+xsave,+xsaveopt"
+]
