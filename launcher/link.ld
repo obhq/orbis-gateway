@@ -1,18 +1,18 @@
 SECTIONS {
-    .text 0 : ALIGN(0x4000) {
+    .text 0 : {
         *(.text.entry)
     }
 
-    .dynamic : ALIGN(0x4000) {
+    .dynamic 0x20 : {
         *(.dynamic)
     }
 
-    .text : ALIGN(0x4000) {
-        *(.text.*)
+    .rodata : ALIGN(8) {
+        *(.rela.dyn)
     }
 
-    .rodata : ALIGN(0x4000) {
-        *(.rela.dyn)
+    .text : {
+        *(.text.*)
     }
 
     /DISCARD/ : {

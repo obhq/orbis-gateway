@@ -5,7 +5,7 @@ use crate::kernel::init_kernel;
 use core::arch::global_asm;
 use core::ffi::c_int;
 use core::panic::PanicInfo;
-use core::ptr::{null, read_unaligned, write_unaligned};
+use core::ptr::null;
 
 mod kernel;
 mod syscalls;
@@ -17,12 +17,12 @@ global_asm!(
     "lea rsi, [rip]",
     "sub rsi, 7",
     "mov rdx, rsi",
-    "add rdx, 0x4000", // Dynamic section hard-coded in link.ld.
+    "add rdx, 0x20", // Dynamic section hard-coded in link.ld.
     "jmp main"
 );
 
 #[no_mangle]
-pub extern "C" fn main(_: *const (), base: *const u8, mut dynamic: *const u8) -> c_int {
+pub extern "C" fn main(_: *const (), base: *const u8, mut dynamic: *const usize) -> c_int {
     // Relocate ourself. Do not call any non-const functions or reference any global variables until
     // relocation is completed.
     let mut relocs = null();
@@ -30,8 +30,8 @@ pub extern "C" fn main(_: *const (), base: *const u8, mut dynamic: *const u8) ->
     let mut relent = 0;
 
     loop {
-        let tag: u64 = unsafe { read_unaligned(dynamic as _) };
-        let val: usize = unsafe { read_unaligned(dynamic.add(8) as _) };
+        let tag = unsafe { *dynamic };
+        let val = unsafe { *dynamic.add(1) };
 
         match tag {
             0 => break,
@@ -41,20 +41,20 @@ pub extern "C" fn main(_: *const (), base: *const u8, mut dynamic: *const u8) ->
             _ => {}
         }
 
-        dynamic = unsafe { dynamic.add(16) };
+        dynamic = unsafe { dynamic.add(2) };
     }
 
     while relsz > 0 {
-        let offset: usize = unsafe { read_unaligned(relocs as _) };
-        let info: u64 = unsafe { read_unaligned(relocs.add(8) as _) };
-        let addend: isize = unsafe { read_unaligned(relocs.add(16) as _) };
+        let info: u64 = unsafe { core::ptr::read(relocs.add(8) as _) };
 
         match info & 0xffffffff {
             0 => break,
             8 => unsafe {
+                let offset: usize = core::ptr::read(relocs as _);
+                let addend: isize = core::ptr::read(relocs.add(16) as _);
                 let addr = base.add(offset) as *mut usize;
-                let val = (base as usize).wrapping_add_signed(addend);
-                write_unaligned(addr, val);
+
+                *addr = (base as usize).wrapping_add_signed(addend);
             },
             _ => {}
         }
