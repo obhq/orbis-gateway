@@ -1,12 +1,32 @@
-use crate::syscalls::{sys_dynlib_dlsym, sys_dynlib_load_prx};
-use core::ffi::{c_int, CStr};
+use crate::syscalls::{sys_dynlib_dlsym, sys_dynlib_load_prx, SysErr};
+use core::ffi::{c_char, c_int, c_uint, c_void, CStr};
 use core::mem::transmute;
+use core::num::{NonZeroI32, NonZeroU32};
 use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 pub fn errno() -> c_int {
     let f: Option<unsafe extern "C" fn() -> *mut c_int> =
         unsafe { transmute(ERRNO.load(Ordering::Relaxed)) };
     unsafe { *f.unwrap()() }
+}
+
+#[allow(non_snake_case)]
+pub unsafe fn sceKernelLoadStartModule(
+    name: *const c_char,
+    argc: usize,
+    argv: *const c_void,
+    flags: c_uint,
+) -> Result<NonZeroU32, SysErr> {
+    let f: Option<
+        unsafe extern "C" fn(*const c_char, usize, *const c_void, c_uint, c_int, c_int) -> c_int,
+    > = transmute(LOAD_START_MODULE.load(Ordering::Relaxed));
+    let r = f.unwrap()(name, argc, argv, flags, 0, 0);
+
+    if r < 0 {
+        Err(SysErr::new(NonZeroI32::new(errno()).unwrap()))
+    } else {
+        Ok(NonZeroU32::new(r.try_into().unwrap()).unwrap())
+    }
 }
 
 /// # Panics

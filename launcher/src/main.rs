@@ -1,12 +1,14 @@
 #![no_std]
 #![no_main]
 
+use crate::c::init_c;
 use crate::kernel::init_kernel;
 use core::arch::global_asm;
 use core::ffi::c_int;
 use core::panic::PanicInfo;
 use core::ptr::null;
 
+mod c;
 mod kernel;
 mod syscalls;
 
@@ -65,6 +67,7 @@ pub extern "C" fn main(_: *const (), base: *const u8, mut dynamic: *const usize)
 
     // Initialize libraries.
     init_kernel();
+    init_c();
 
     0
 }

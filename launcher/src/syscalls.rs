@@ -1,6 +1,6 @@
 use core::arch::asm;
 use core::ffi::{c_int, CStr};
-use core::num::NonZeroU32;
+use core::num::NonZeroI32;
 
 pub fn write(fd: c_int, buf: *const u8, nbytes: usize) -> Result<usize, SysErr> {
     unsafe { syscall(4, fd, buf, nbytes, 0).map(|v| v.0) }
@@ -68,14 +68,20 @@ where
     );
 
     if cf != 0 {
-        Err(SysErr(NonZeroU32::new(rax.try_into().unwrap()).unwrap()))
+        Err(SysErr(NonZeroI32::new(rax.try_into().unwrap()).unwrap()))
     } else {
         Ok((rax, rdx))
     }
 }
 
 #[derive(Debug)]
-pub struct SysErr(NonZeroU32);
+pub struct SysErr(NonZeroI32);
+
+impl SysErr {
+    pub fn new(errno: NonZeroI32) -> Self {
+        Self(errno)
+    }
+}
 
 #[derive(Clone, Copy)]
 struct SysArg(usize);
