@@ -1,0 +1,30 @@
+name: Development Build
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+    - name: Enable x86_64-unknown-none
+      run: rustup target add x86_64-unknown-none
+    - name: Install LLVM tools
+      run: |
+        cargo install cargo-binutils
+        rustup component add llvm-tools
+    - name: Build
+      run: cargo build --release
+    - name: Export the payload
+      run: cargo objcopy --release -- -O binary orbis-gateway.bin
+    - name: Upload the payload
+      uses: actions/upload-artifact@v4
+      with:
+        name: orbis-gateway
+        path: orbis-gateway.bin
