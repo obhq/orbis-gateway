@@ -18,14 +18,14 @@ global_asm!(
     "add rax, 0x100", // Offset of dynamic section configured in orbis-gateway.ld.
     "xor r8, r8",
     "read_dynamic:",
-    "mov rbx, [rax]",
+    "mov rsi, [rax]",
     "mov rcx, [rax+8]",
     "add rax, 16",
-    "test rbx, rbx", // Check if DT_NULL.
+    "test rsi, rsi", // Check if DT_NULL.
     "jz relocate",
-    "cmp rbx, 7", // Check if DT_RELA.
+    "cmp rsi, 7", // Check if DT_RELA.
     "jz dt_rela",
-    "cmp rbx, 8", // Check if DT_RELASZ.
+    "cmp rsi, 8", // Check if DT_RELASZ.
     "jz dt_relasz",
     "jmp read_dynamic",
     "dt_rela:", // Keep DT_RELA.
@@ -38,7 +38,7 @@ global_asm!(
     "relocate:",
     "test r8, r8", // Check if no more DT_RELA entries.
     "jz main",
-    "mov rbx, [rdx]",
+    "mov rsi, [rdx]",
     "mov rax, [rdx+8]",
     "mov rcx, [rdx+16]",
     "add rdx, 24",
@@ -47,9 +47,9 @@ global_asm!(
     "jz main",
     "cmp eax, 8", // Check if R_X86_64_RELATIVE.
     "jnz relocate",
-    "add rbx, rdi",
+    "add rsi, rdi",
     "add rcx, rdi",
-    "mov [rbx], rcx",
+    "mov [rsi], rcx",
     "jmp relocate",
 );
 
