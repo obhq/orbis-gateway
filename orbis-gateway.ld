@@ -1,9 +1,9 @@
 SECTIONS {
-    .text 0 : {
+    .text 0x00 : {
         *(.text.entry)
     }
 
-    .dynamic 0x20 : {
+    .dynamic 0x100 : {
         *(.dynamic)
     }
 

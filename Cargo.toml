@@ -1,8 +1,6 @@
-[workspace]
-resolver = "2"
-members = [
-    "gateway",
-    "launcher"
-]
+[package]
+name = "orbis-gateway"
+version = "0.1.0"
+edition = "2021"
 
-default-members = ["gateway", "launcher"]
+[dependencies]

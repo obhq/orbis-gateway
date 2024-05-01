@@ -23,7 +23,13 @@ cargo install cargo-binutils
 `cargo-binutils` required additional dependency which can be installed with the following command:
 
 ```sh
-rustup component add llvm-tools-preview
+rustup component add llvm-tools
+```
+
+### Build
+
+```sh
+cargo objcopy --release -- -O binary orbis-gateway.bin
 ```
 
 ## License
